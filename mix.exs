@@ -1,13 +1,17 @@
 defmodule Safetensors.MixProject do
   use Mix.Project
 
+  @description "Safetensors load/deserialization in Elixir"
+
   def project do
     [
       app: :safetensors,
       version: "0.1.0",
+      description: @description,
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      package: package()
     ]
   end
 
@@ -23,6 +27,15 @@ defmodule Safetensors.MixProject do
     [
       {:jason, "~> 1.4"},
       {:nx, "~> 0.5.3"}
+    ]
+  end
+
+  defp package do
+    [
+      licenses: ["Apache-2.0"],
+      links: %{
+        "GitHub" => "https://github.com/mimiquate/safetensors"
+      }
     ]
   end
 end
