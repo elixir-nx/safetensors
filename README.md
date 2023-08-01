@@ -1,6 +1,6 @@
 # Safetensors
 
-**TODO: Add description**
+[Safetensors](https://huggingface.co/docs/safetensors/index) loading/deserialization in Elixir
 
 ## Installation
 
