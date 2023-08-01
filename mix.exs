@@ -8,7 +8,7 @@ defmodule Safetensors.MixProject do
       app: :safetensors,
       version: "0.1.0",
       description: @description,
-      elixir: "~> 1.15",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package()
