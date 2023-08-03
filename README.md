@@ -2,6 +2,8 @@
 
 [Safetensors](https://huggingface.co/docs/safetensors/index) loading/deserialization in Elixir
 
+[![ci](https://github.com/mimiquate/safetensors/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mimiquate/safetensors/actions?query=branch%3Amain)
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
