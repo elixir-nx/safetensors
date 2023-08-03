@@ -1,7 +1,7 @@
 defmodule Safetensors.MixProject do
   use Mix.Project
 
-  @description "Safetensors load/deserialization in Elixir"
+  @description "Safetensors dump and load in Elixir"
 
   def project do
     [

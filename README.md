@@ -1,6 +1,6 @@
 # Safetensors
 
-[Safetensors](https://huggingface.co/docs/safetensors/index) loading/deserialization in Elixir
+[Safetensors](https://huggingface.co/docs/safetensors/index) dump and load in Elixir
 
 [![ci](https://github.com/mimiquate/safetensors/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mimiquate/safetensors/actions?query=branch%3Amain)
 [![Hex.pm](https://img.shields.io/hexpm/v/safetensors.svg)](https://hex.pm/packages/safetensors)
