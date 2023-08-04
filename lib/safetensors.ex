@@ -1,9 +1,26 @@
 defmodule Safetensors do
   @moduledoc """
-  Documentation for `Safetensors`.
-  """
+  [Safetensors](https://huggingface.co/docs/safetensors/index) implementation for `Nx`.
 
-  # https://huggingface.co/docs/safetensors/index#format
+  ## Examples
+
+      iex> x = Nx.tensor([1, 2, 3])
+      iex> y = Nx.tensor([1.0, 2.0, 3.0])
+      iex> tensors = %{"x" => x, "y" => y}
+      iex> data = Safetensors.dump(tensors)
+      iex> tensors = Safetensors.load!(data)
+      iex> tensors["x"]
+      #Nx.Tensor<
+        s64[3]
+        [1, 2, 3]
+      >
+      iex> tensors["y"]
+      #Nx.Tensor<
+        f32[3]
+        [1.0, 2.0, 3.0]
+      >
+
+  """
 
   @header_metadata_key "__metadata__"
 
@@ -24,42 +41,53 @@ defmodule Safetensors do
 
   @dtype_to_type for {k, v} <- @type_to_dtype, into: %{}, do: {v, k}
 
-  def dump(tensors) when is_map(tensors) do
-    {header, buffer} =
-      tensors
-      |> Enum.map_reduce(
-        <<>>,
-        fn {tensor_name, tensor}, buffer ->
-          binary = Nx.to_binary(tensor)
-          offset = byte_size(buffer)
+  @doc """
+  Serializes the given map of tensors to iodata.
 
-          {
-            {
-              tensor_name,
-              Jason.OrderedObject.new(
-                dtype: tensor |> Nx.type() |> type_to_dtype(),
-                shape: tensor |> Nx.shape() |> Tuple.to_list(),
-                data_offsets: [offset, offset + byte_size(binary)]
-              )
-            },
-            buffer <> binary
-          }
-        end
-      )
+  `iodata` is a list of binaries that can be written to any io device,
+  such as a file or a socket. You can ensure the result is a binary by
+  calling `IO.iodata_to_binary/1`.
+  """
+  @spec dump(%{String.t() => Nx.Tensor.t()}) :: iodata()
+  def dump(tensors) when is_map(tensors) do
+    {header_entries, {buffer, _offset}} =
+      Enum.map_reduce(tensors, {[], 0}, fn {tensor_name, tensor}, {buffer, offset} ->
+        binary = Nx.to_binary(tensor)
+        end_offset = offset + byte_size(binary)
+
+        header_entry = {
+          tensor_name,
+          Jason.OrderedObject.new(
+            dtype: tensor |> Nx.type() |> type_to_dtype(),
+            shape: tensor |> Nx.shape() |> Tuple.to_list(),
+            data_offsets: [offset, end_offset]
+          )
+        }
+
+        {header_entry, {[buffer, binary], end_offset}}
+      end)
 
     header_json =
-      header
+      header_entries
       |> Jason.OrderedObject.new()
       |> Jason.encode!()
 
-    <<
-      String.length(header_json)::unsigned-64-integer-little,
-      header_json::binary,
-      buffer::binary
-    >>
+    [
+      <<byte_size(header_json)::unsigned-64-integer-little>>,
+      header_json,
+      buffer
+    ]
   end
 
-  def load!(data) when is_binary(data) do
+  @doc """
+  Loads a serialized map of tensors.
+
+  It is the opposite of `dump/1`.
+  """
+  @spec load!(iodata()) :: %{String.t() => Nx.Tensor.t()}
+  def load!(data) when is_binary(data) or is_list(data) do
+    data = IO.iodata_to_binary(data)
+
     <<
       header_size::unsigned-64-integer-little,
       header_json::binary-size(header_size),
@@ -71,22 +99,22 @@ defmodule Safetensors do
       |> Jason.decode!()
       |> Map.pop(@header_metadata_key)
 
-    header
-    |> Enum.into(%{}, fn {tensor_name, tensor_info} ->
+    for {tensor_name, tensor_info} <- header, into: %{} do
       %{
         "data_offsets" => [offset_start, offset_end],
         "dtype" => dtype,
         "shape" => shape
       } = tensor_info
 
-      {
-        tensor_name,
-        buffer
-        |> binary_part(offset_start, offset_end - offset_start)
-        |> Nx.from_binary(dtype |> dtype_to_type())
+      binary = binary_slice(buffer, offset_start, offset_end - offset_start)
+
+      tensor =
+        binary
+        |> Nx.from_binary(dtype_to_type(dtype))
         |> Nx.reshape(List.to_tuple(shape))
-      }
-    end)
+
+      {tensor_name, tensor}
+    end
   end
 
   defp type_to_dtype(type) do

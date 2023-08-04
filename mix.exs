@@ -1,33 +1,40 @@
 defmodule Safetensors.MixProject do
   use Mix.Project
 
-  @description "Safetensors dump and load in Elixir"
+  @version "0.1.1"
+  @description "Safetensors implementation for Nx"
 
   def project do
     [
       app: :safetensors,
-      version: "0.2.0",
+      version: @version,
       description: @description,
+      name: "Safetensors",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      docs: docs(),
       package: package()
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    []
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:jason, "~> 1.4"},
-      {:nx, "~> 0.5.3"},
+      {:nx, "~> 0.5"},
       {:ex_doc, "~> 0.30.3", only: :dev, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "Safetensors",
+      source_url: "https://github.com/elixir-nx/safetensors",
+      source_ref: "v#{@version}"
     ]
   end
 
@@ -35,7 +42,7 @@ defmodule Safetensors.MixProject do
     [
       licenses: ["Apache-2.0"],
       links: %{
-        "GitHub" => "https://github.com/mimiquate/safetensors"
+        "GitHub" => "https://github.com/elixir-nx/safetensors"
       }
     ]
   end

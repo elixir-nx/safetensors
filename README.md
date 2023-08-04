@@ -1,14 +1,16 @@
 # Safetensors
 
-[Safetensors](https://huggingface.co/docs/safetensors/index) dump and load in Elixir
-
 [![ci](https://github.com/mimiquate/safetensors/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mimiquate/safetensors/actions?query=branch%3Amain)
 [![Hex.pm](https://img.shields.io/hexpm/v/safetensors.svg)](https://hex.pm/packages/safetensors)
+[![Docs](https://img.shields.io/badge/docs-gray.svg)](https://hexdocs.pm/safetensors)
+
+[Safetensors](https://huggingface.co/docs/safetensors/index) implementation for [Nx](https://github.com/elixir-nx/nx).
+
+Safetensors is a simple format for storing tensors in a language-agnostic manner. This packages allows loading and storing data in this format.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `safetensors` to your list of dependencies in `mix.exs`:
+You can add the `:safetensors` dependency to your `mix.exs`:
 
 ```elixir
 def deps do
@@ -17,10 +19,6 @@ def deps do
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/safetensors>.
 
 ## License
 
