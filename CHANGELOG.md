@@ -5,11 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/elixir-nx/safetensors)
+## [v0.1.1](https://github.com/elixir-nx/safetensors/tree/v0.1.1) (2023-08-04)
 
 ### Added
 
-- `Safetensors.dump/1`
+- Added `Safetensors.dump/1` for serializing tensors
+
+### Fixed
+
+- Fixed `Safetensors.load!/1` for big-endian systems ([#2](https://github.com/elixir-nx/safetensors/pull/2))
 
 ## [v0.1.0](https://github.com/elixir-nx/safetensors/tree/v0.1.0) (2023-08-01)
 
