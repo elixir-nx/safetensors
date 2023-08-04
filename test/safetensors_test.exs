@@ -7,6 +7,7 @@ defmodule SafetensorsTest do
     binary =
       %{test: Nx.tensor([[1, 2], [3, 4]], type: :s32)}
       |> Safetensors.dump()
+      |> IO.iodata_to_binary()
 
     # source:
     # https://github.com/huggingface/safetensors/blob/1a65a3fdebcf280ef0ca32934901d3e2ad3b2c65/bindings/python/tests/test_simple.py#L22-L25

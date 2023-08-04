@@ -34,8 +34,7 @@ defmodule Safetensors.MixProject do
     [
       main: "Safetensors",
       source_url: "https://github.com/elixir-nx/safetensors",
-      source_ref: "v#{@version}",
-      extras: ["notebooks/examples.livemd"]
+      source_ref: "v#{@version}"
     ]
   end
 
