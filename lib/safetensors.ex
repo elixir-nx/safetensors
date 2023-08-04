@@ -1,9 +1,26 @@
 defmodule Safetensors do
   @moduledoc """
-  Documentation for `Safetensors`.
-  """
+  [Safetensors](https://huggingface.co/docs/safetensors/index) implementation for `Nx`.
 
-  # https://huggingface.co/docs/safetensors/index#format
+  ## Examples
+
+      iex> x = Nx.tensor([1, 2, 3])
+      iex> y = Nx.tensor([1.0, 2.0, 3.0])
+      iex> tensors = %{"x" => x, "y" => y}
+      iex> data = Safetensors.dump(tensors)
+      iex> tensors = Safetensors.load!(data)
+      iex> tensors["x"]
+      #Nx.Tensor<
+        s64[3]
+        [1, 2, 3]
+      >
+      iex> tensors["y"]
+      #Nx.Tensor<
+        f32[3]
+        [1.0, 2.0, 3.0]
+      >
+
+  """
 
   @header_metadata_key "__metadata__"
 
@@ -24,6 +41,14 @@ defmodule Safetensors do
 
   @dtype_to_type for {k, v} <- @type_to_dtype, into: %{}, do: {v, k}
 
+  @doc """
+  Serializes the given map of tensors to iodata.
+
+  `iodata` is a list of binaries that can be written to any io device,
+  such as a file or a socket. You can ensure the result is a binary by
+  calling `IO.iodata_to_binary/1`.
+  """
+  @spec dump(%{String.t() => Nx.Tensor.t()}) :: iodata()
   def dump(tensors) when is_map(tensors) do
     {header, buffer} =
       tensors
@@ -59,7 +84,15 @@ defmodule Safetensors do
     >>
   end
 
-  def load!(data) when is_binary(data) do
+  @doc """
+  Loads a serialized map of tensors.
+
+  It is the opposite of `dump/1`.
+  """
+  @spec load!(iodata()) :: %{String.t() => Nx.Tensor.t()}
+  def load!(data) when is_binary(data) or is_list(data) do
+    data = IO.iodata_to_binary(data)
+
     <<
       header_size::unsigned-64-integer-little,
       header_json::binary-size(header_size),

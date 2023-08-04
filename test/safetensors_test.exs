@@ -1,5 +1,6 @@
 defmodule SafetensorsTest do
   use ExUnit.Case
+
   doctest Safetensors
 
   test "dump" do
