@@ -91,7 +91,7 @@ defmodule Safetensors do
   Tensors are loaded into Nx one by one,
   without loading the whole file into disk.
   """
-  @spec read!(path :: iodata()) :: %{String.t() => Nx.Tensor.t()}
+  @spec read!(path :: Path.t()) :: %{String.t() => Nx.Tensor.t()}
   def read!(path) do
     File.open!(path, [:read, :raw], fn file ->
       {:ok, <<header_size::unsigned-64-integer-little>>} = :file.read(file, 8)
