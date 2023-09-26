@@ -100,24 +100,12 @@ defmodule Safetensors do
       header = decode_header!(header_json)
 
       for {tensor_name, tensor_info} <- header, into: %{} do
-        %{
-          "data_offsets" => [offset_start, offset_end],
-          "dtype" => dtype,
-          "shape" => shape
-        } = tensor_info
-
-        {_, elem_size} = type = dtype_to_type(dtype)
+        %{"data_offsets" => [offset_start, offset_end]} = tensor_info
 
         {:ok, binary} =
           :file.pread(file, header_size + 8 + offset_start, offset_end - offset_start)
 
-        tensor =
-          binary
-          |> new_byte_order(elem_size, :little)
-          |> Nx.from_binary(type)
-          |> Nx.reshape(List.to_tuple(shape))
-
-        {tensor_name, tensor}
+        {tensor_name, build_tensor(binary, tensor_info)}
       end
     end)
   end
@@ -140,20 +128,12 @@ defmodule Safetensors do
     header = decode_header!(header_json)
 
     for {tensor_name, tensor_info} <- header, into: %{} do
-      %{
-        "data_offsets" => [offset_start, offset_end],
-        "dtype" => dtype,
-        "shape" => shape
-      } = tensor_info
-
-      {_, elem_size} = type = dtype_to_type(dtype)
+      %{"data_offsets" => [offset_start, offset_end]} = tensor_info
 
       tensor =
         buffer
         |> binary_slice(offset_start, offset_end - offset_start)
-        |> new_byte_order(elem_size, :little)
-        |> Nx.from_binary(type)
-        |> Nx.reshape(List.to_tuple(shape))
+        |> build_tensor(tensor_info)
 
       {tensor_name, tensor}
     end
@@ -166,6 +146,16 @@ defmodule Safetensors do
       |> Map.pop(@header_metadata_key)
 
     header
+  end
+
+  defp build_tensor(binary, tensor_info) do
+    %{"dtype" => dtype, "shape" => shape} = tensor_info
+    {_, elem_size} = type = dtype_to_type(dtype)
+
+    binary
+    |> new_byte_order(elem_size, :little)
+    |> Nx.from_binary(type)
+    |> Nx.reshape(List.to_tuple(shape))
   end
 
   defp type_to_dtype(type) do
