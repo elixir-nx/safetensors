@@ -44,7 +44,7 @@ defmodule Safetensors do
   @doc """
   Serializes the given map of tensors to iodata.
 
-  `iodata` is a list of binaries that can be written to any io device,
+  `iodata` is a list of binaries that can be written to any IO device,
   such as a file or a socket. You can ensure the result is a binary by
   calling `IO.iodata_to_binary/1`.
   """
@@ -89,7 +89,7 @@ defmodule Safetensors do
   Reads a safe tensor from file.
 
   Tensors are loaded into Nx one by one,
-  without loading the whole file into disk.
+  without the need to load the entire file from disk into memory.
   """
   @spec read!(path :: Path.t()) :: %{String.t() => Nx.Tensor.t()}
   def read!(path) do
