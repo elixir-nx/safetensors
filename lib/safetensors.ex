@@ -22,6 +22,8 @@ defmodule Safetensors do
 
   """
 
+  alias Safetensors.Shared
+
   @header_metadata_key "__metadata__"
 
   @type_to_dtype %{
@@ -60,7 +62,7 @@ defmodule Safetensors do
       :ok = :file.write(file, header_binary(header_entries))
 
       for {_tensor_name, tensor} <- tensors do
-        :ok = :file.write(file, tensor_to_binary(tensor))
+        :ok = :file.write(file, tensor_to_iodata(tensor))
       end
     end)
 
@@ -97,12 +99,12 @@ defmodule Safetensors do
     Nx.size(tensor) * elem_byte_size
   end
 
-  defp tensor_to_binary(tensor) do
+  defp tensor_to_iodata(tensor) do
     {_, elem_size} = Nx.type(tensor)
 
     tensor
     |> Nx.to_binary()
-    |> new_byte_order(elem_size, :little)
+    |> Shared.new_byte_order(elem_size, :little)
   end
 
   @doc """
@@ -119,7 +121,7 @@ defmodule Safetensors do
     {header_entries, {buffer, _offset}} =
       Enum.map_reduce(tensors, {[], 0}, fn {tensor_name, tensor}, {buffer, offset} ->
         {header_entry, end_offset} = tensor_header_entry(tensor_name, tensor, offset)
-        binary = tensor_to_binary(tensor)
+        binary = tensor_to_iodata(tensor)
         {header_entry, {[buffer, binary], end_offset}}
       end)
 
@@ -131,9 +133,19 @@ defmodule Safetensors do
 
   Tensors are loaded into Nx one by one, without the need to load the
   entire file from disk into memory.
+
+  ## Options
+
+    * `:lazy` - when `true`, instead of returning tensors, the function
+      returns lazy containers. Such a container can be converted to a
+      tensor using `Nx.to_tensor/1` and it is only at that point that
+      it is from the file. Defaults to `false`
+
   """
-  @spec read!(path :: Path.t()) :: %{String.t() => Nx.Tensor.t()}
-  def read!(path) do
+  @spec read!(path :: Path.t(), keyword()) :: %{String.t() => Nx.LazyContainer.t()}
+  def read!(path, opts \\ []) do
+    opts = Keyword.validate!(opts, lazy: false)
+
     File.open!(path, [:read, :raw], fn file ->
       {:ok, <<header_size::unsigned-64-integer-little>>} = :file.read(file, 8)
       {:ok, header_json} = :file.read(file, header_size)
@@ -143,10 +155,26 @@ defmodule Safetensors do
       for {tensor_name, tensor_info} <- header, into: %{} do
         %{"data_offsets" => [offset_start, offset_end]} = tensor_info
 
-        {:ok, binary} =
-          :file.pread(file, header_size + 8 + offset_start, offset_end - offset_start)
+        {shape, type} = shape_and_type(tensor_info)
 
-        {tensor_name, build_tensor(binary, tensor_info)}
+        byte_offset = header_size + 8 + offset_start
+        byte_size = offset_end - offset_start
+
+        value =
+          if opts[:lazy] do
+            %Safetensors.FileTensor{
+              shape: shape,
+              type: type,
+              path: path,
+              byte_offset: byte_offset,
+              byte_size: byte_size
+            }
+          else
+            {:ok, binary} = :file.pread(file, byte_offset, byte_size)
+            Shared.build_tensor(binary, shape, type)
+          end
+
+        {tensor_name, value}
       end
     end)
   end
@@ -170,11 +198,12 @@ defmodule Safetensors do
 
     for {tensor_name, tensor_info} <- header, into: %{} do
       %{"data_offsets" => [offset_start, offset_end]} = tensor_info
+      {shape, type} = shape_and_type(tensor_info)
 
       tensor =
         buffer
         |> binary_slice(offset_start, offset_end - offset_start)
-        |> build_tensor(tensor_info)
+        |> Shared.build_tensor(shape, type)
 
       {tensor_name, tensor}
     end
@@ -189,14 +218,8 @@ defmodule Safetensors do
     header
   end
 
-  defp build_tensor(binary, tensor_info) do
-    %{"dtype" => dtype, "shape" => shape} = tensor_info
-    {_, elem_size} = type = dtype_to_type(dtype)
-
-    binary
-    |> new_byte_order(elem_size, :little)
-    |> Nx.from_binary(type)
-    |> Nx.reshape(List.to_tuple(shape))
+  defp shape_and_type(%{"dtype" => dtype, "shape" => shape}) do
+    {List.to_tuple(shape), dtype_to_type(dtype)}
   end
 
   defp type_to_dtype(type) do
@@ -205,20 +228,5 @@ defmodule Safetensors do
 
   defp dtype_to_type(dtype) do
     @dtype_to_type[dtype] || raise "unrecognized dtype #{inspect(dtype)}"
-  end
-
-  defp new_byte_order(binary, size, endianness) do
-    if System.endianness() == endianness do
-      binary
-    else
-      data =
-        for <<data::size(size)-binary <- binary>> do
-          data
-          |> :binary.decode_unsigned()
-          |> :binary.encode_unsigned(endianness)
-        end
-
-      IO.iodata_to_binary(data)
-    end
   end
 end
