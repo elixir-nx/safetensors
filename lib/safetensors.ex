@@ -139,7 +139,7 @@ defmodule Safetensors do
     * `:lazy` - when `true`, instead of returning tensors, the function
       returns lazy containers. Such a container can be converted to a
       tensor using `Nx.to_tensor/1` and it is only at that point that
-      it is from the file. Defaults to `false`
+      it is read from the file. Defaults to `false`
 
   """
   @spec read!(path :: Path.t(), keyword()) :: %{String.t() => Nx.LazyContainer.t()}
