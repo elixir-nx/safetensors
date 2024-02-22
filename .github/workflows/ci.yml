@@ -11,8 +11,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - elixir_version: 1.15.4
-            otp_version: 26.0.2
+          - elixir_version: 1.16.1
+            otp_version: 26.2.2
             lint: true
           - elixir_version: 1.14.5
             otp_version: 25.3.2.5
