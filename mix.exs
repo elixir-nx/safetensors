@@ -1,7 +1,7 @@
 defmodule Safetensors.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.1.3"
   @description "Safetensors implementation for Nx"
 
   def project do

@@ -15,7 +15,7 @@ You can add the `:safetensors` dependency to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:safetensors, "~> 0.1.2"}
+    {:safetensors, "~> 0.1.3"}
   ]
 end
 ```
