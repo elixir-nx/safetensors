@@ -44,6 +44,23 @@ defmodule SafetensorsTest do
     assert Safetensors.read!(path) == %{"test" => Nx.tensor([[0, 0], [0, 0]], type: :s32)}
   end
 
+  @tag :tmp_dir
+  test "read lazy", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "safetensor")
+
+    # source:
+    # https://github.com/huggingface/safetensors/blob/1a65a3fdebcf280ef0ca32934901d3e2ad3b2c65/bindings/python/tests/test_simple.py#L35-L40
+    File.write!(
+      path,
+      ~s(<\x00\x00\x00\x00\x00\x00\x00{"test":{"dtype":"I32","shape":[2,2],"data_offsets":[0,16]}}\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00)
+    )
+
+    assert %{"test" => %Safetensors.FileTensor{} = file_tensor} =
+             Safetensors.read!(path, lazy: true)
+
+    assert Nx.to_tensor(file_tensor) == Nx.tensor([[0, 0], [0, 0]], type: :s32)
+  end
+
   test "load" do
     # source:
     # https://github.com/huggingface/safetensors/blob/1a65a3fdebcf280ef0ca32934901d3e2ad3b2c65/bindings/python/tests/test_simple.py#L35-L40
