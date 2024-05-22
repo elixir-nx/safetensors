@@ -26,6 +26,9 @@ defmodule Safetensors.MixProject do
     [
       {:jason, "~> 1.4"},
       {:nx, "~> 0.5"},
+
+      # Dev
+      {:blend, "~> 0.3.0", only: :dev},
       {:ex_doc, "~> 0.30.3", only: :dev, runtime: false}
     ]
   end

@@ -11,17 +11,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - elixir_version: 1.16.1
-            otp_version: 26.2.2
+          - elixir_version: 1.16.3
+            otp_version: 26.2.5
             lint: true
+          - elixir_version: 1.16.3
+            otp_version: 26.2.5
+            blend: nx_0_6
           - elixir_version: 1.14.5
-            otp_version: 25.3.2.5
+            otp_version: 25.3.2.12
+            blend: nx_0_5
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: erlef/setup-beam@v1
         with:
           otp-version: ${{matrix.otp_version}}
           elixir-version: ${{matrix.elixir_version}}
+      - run: cp blend/${{matrix.blend}}.mix.lock mix.lock
+        if: matrix.blend
       - run: mix deps.get
       - run: mix format --check-formatted
         if: ${{ matrix.lint }}
