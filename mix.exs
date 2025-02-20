@@ -26,7 +26,7 @@ defmodule Safetensors.MixProject do
     [
       {:jason, "~> 1.4"},
       {:nx, "~> 0.5"},
-      {:ex_doc, "~> 0.30.3", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.37", only: :dev, runtime: false}
     ]
   end
 

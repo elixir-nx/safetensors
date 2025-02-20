@@ -11,7 +11,7 @@ defmodule Safetensors do
       iex> tensors = Safetensors.load!(data)
       iex> tensors["x"]
       #Nx.Tensor<
-        s64[3]
+        s32[3]
         [1, 2, 3]
       >
       iex> tensors["y"]
