@@ -24,8 +24,12 @@ defmodule Safetensors.MixProject do
 
   defp deps do
     [
-      {:jason, "~> 1.4"},
       {:nx, "~> 0.5"},
+
+      # Optional
+      {:jason, "~> 1.4", optional: true},
+
+      # Dev
       {:ex_doc, "~> 0.37", only: :dev, runtime: false}
     ]
   end
