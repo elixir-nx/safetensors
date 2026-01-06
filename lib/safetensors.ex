@@ -100,13 +100,24 @@ defmodule Safetensors do
   end
 
   defp tensor_byte_size(tensor) do
-    {_, elem_size} = Nx.type(tensor)
+    elem_size =
+      case Nx.type(tensor) do
+        # fp8 3-tuple types are always 8 bits
+        {:f, 8, _format} -> 8
+        {_, size} -> size
+      end
+
     elem_byte_size = div(elem_size, 8)
     Nx.size(tensor) * elem_byte_size
   end
 
   defp tensor_to_iodata(tensor) do
-    {_, elem_size} = Nx.type(tensor)
+    elem_size =
+      case Nx.type(tensor) do
+        # fp8 3-tuple types are always 8 bits
+        {:f, 8, _format} -> 8
+        {_, size} -> size
+      end
 
     tensor
     |> Nx.to_binary()
