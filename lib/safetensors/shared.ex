@@ -6,7 +6,12 @@ defmodule Safetensors.Shared do
   """
   @spec build_tensor(binary(), tuple(), Nx.Type.t()) :: Nx.Tensor.t()
   def build_tensor(binary, shape, type) do
-    {_, elem_size} = type
+    elem_size =
+      case type do
+        # fp8 3-tuple types are always 8 bits
+        {:f, 8, _format} -> 8
+        {_, size} -> size
+      end
 
     binary
     |> new_byte_order(elem_size, :little)
