@@ -31,6 +31,9 @@ defmodule Safetensors do
     {:f, 64} => "F64",
     {:f, 32} => "F32",
     {:f, 16} => "F16",
+    {:f, 8} => "F8_E5M2",
+    {:f, 8, :e5m2} => "F8_E5M2",
+    {:f, 8, :e4m3fn} => "F8_E4M3",
     {:s, 64} => "I64",
     {:s, 32} => "I32",
     {:s, 16} => "I16",
@@ -41,7 +44,10 @@ defmodule Safetensors do
     {:u, 8} => "U8"
   }
 
-  @dtype_to_type for {k, v} <- @type_to_dtype, into: %{}, do: {v, k}
+  @dtype_to_type for({k, v} <- @type_to_dtype, into: %{}, do: {v, k})
+                 # Override with explicit fp8 3-tuple types for reading
+                 |> Map.put("F8_E5M2", {:f, 8, :e5m2})
+                 |> Map.put("F8_E4M3", {:f, 8, :e4m3fn})
 
   @doc """
   Writes a map of tensors to a file.
