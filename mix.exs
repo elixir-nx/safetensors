@@ -25,6 +25,7 @@ defmodule Safetensors.MixProject do
   defp deps do
     [
       {:jason, "~> 1.4"},
+      # TODO: Switch to released version once Nx with fp8 support is published
       {:nx, github: "elixir-nx/nx", sparse: "nx", branch: "main"},
       {:ex_doc, "~> 0.37", only: :dev, runtime: false}
     ]
