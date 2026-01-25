@@ -85,14 +85,14 @@ defmodule SafetensorsTest do
       path = Path.join(tmp_dir, "fp8_e4m3fn")
 
       # Create E4M3FN tensor
-      original = Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8e4m3fn)
+      original = Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8_e4m3fn)
       Safetensors.write!(path, %{"weight" => original})
 
       # Read back
       loaded = Safetensors.read!(path)
 
       # Verify type is preserved
-      assert Nx.type(loaded["weight"]) == {:f, 8, :e4m3fn}
+      assert Nx.type(loaded["weight"]) == {:f8_e4m3fn, 8}
       assert Nx.shape(loaded["weight"]) == {2, 2}
 
       # Note: Value accuracy testing is done in Nx core tests
@@ -104,14 +104,14 @@ defmodule SafetensorsTest do
       path = Path.join(tmp_dir, "fp8_e5m2")
 
       # Create E5M2 tensor
-      original = Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8e5m2)
+      original = Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8)
       Safetensors.write!(path, %{"weight" => original})
 
       # Read back
       loaded = Safetensors.read!(path)
 
       # Verify type is preserved
-      assert Nx.type(loaded["weight"]) == {:f, 8, :e5m2}
+      assert Nx.type(loaded["weight"]) == {:f, 8}
       assert Nx.shape(loaded["weight"]) == {2, 2}
     end
 
@@ -121,8 +121,8 @@ defmodule SafetensorsTest do
 
       # Create tensors with different types
       tensors = %{
-        "e4m3_weight" => Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8e4m3fn),
-        "e5m2_weight" => Nx.tensor([[5.0, 6.0], [7.0, 8.0]], type: :f8e5m2),
+        "e4m3_weight" => Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8_e4m3fn),
+        "e5m2_weight" => Nx.tensor([[5.0, 6.0], [7.0, 8.0]], type: :f8),
         "f16_weight" => Nx.tensor([[9.0, 10.0], [11.0, 12.0]], type: :f16)
       }
 
@@ -130,15 +130,15 @@ defmodule SafetensorsTest do
       loaded = Safetensors.read!(path)
 
       # Verify all types are preserved
-      assert Nx.type(loaded["e4m3_weight"]) == {:f, 8, :e4m3fn}
-      assert Nx.type(loaded["e5m2_weight"]) == {:f, 8, :e5m2}
+      assert Nx.type(loaded["e4m3_weight"]) == {:f8_e4m3fn, 8}
+      assert Nx.type(loaded["e5m2_weight"]) == {:f, 8}
       assert Nx.type(loaded["f16_weight"]) == {:f, 16}
     end
 
     test "dump and load fp8 tensors" do
       tensors = %{
-        "e4m3" => Nx.tensor([1.0, 2.0, 3.0], type: :f8e4m3fn),
-        "e5m2" => Nx.tensor([4.0, 5.0, 6.0], type: :f8e5m2)
+        "e4m3" => Nx.tensor([1.0, 2.0, 3.0], type: :f8_e4m3fn),
+        "e5m2" => Nx.tensor([4.0, 5.0, 6.0], type: :f8)
       }
 
       # Dump to binary
@@ -148,8 +148,8 @@ defmodule SafetensorsTest do
       loaded = Safetensors.load!(binary)
 
       # Verify types
-      assert Nx.type(loaded["e4m3"]) == {:f, 8, :e4m3fn}
-      assert Nx.type(loaded["e5m2"]) == {:f, 8, :e5m2}
+      assert Nx.type(loaded["e4m3"]) == {:f8_e4m3fn, 8}
+      assert Nx.type(loaded["e5m2"]) == {:f, 8}
 
       # Verify shapes
       assert Nx.shape(loaded["e4m3"]) == {3}
@@ -161,7 +161,7 @@ defmodule SafetensorsTest do
       path = Path.join(tmp_dir, "fp8_lazy")
 
       # Write fp8 tensor
-      original = Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8e4m3fn)
+      original = Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8_e4m3fn)
       Safetensors.write!(path, %{"weight" => original})
 
       # Read lazily
@@ -169,12 +169,12 @@ defmodule SafetensorsTest do
 
       # Verify it's a FileTensor
       assert %Safetensors.FileTensor{} = file_tensor
-      assert file_tensor.type == {:f, 8, :e4m3fn}
+      assert file_tensor.type == {:f8_e4m3fn, 8}
       assert file_tensor.shape == {2, 2}
 
       # Convert to tensor and verify type is preserved
       tensor = Nx.to_tensor(file_tensor)
-      assert Nx.type(tensor) == {:f, 8, :e4m3fn}
+      assert Nx.type(tensor) == {:f8_e4m3fn, 8}
     end
 
     @tag :tmp_dir
@@ -182,7 +182,7 @@ defmodule SafetensorsTest do
       path = Path.join(tmp_dir, "fp8_size")
 
       # Create a large fp8 tensor
-      tensor = Nx.iota({100, 100}, type: :f8e4m3fn)
+      tensor = Nx.iota({100, 100}, type: :f8_e4m3fn)
       Safetensors.write!(path, %{"large" => tensor})
 
       # Verify file size is correct (8 bytes header size + header + 10000 bytes data)
@@ -202,8 +202,8 @@ defmodule SafetensorsTest do
     test "fp8 dtype strings in header" do
       # Create fp8 tensors
       tensors = %{
-        "e4m3" => Nx.tensor([1.0], type: :f8e4m3fn),
-        "e5m2" => Nx.tensor([2.0], type: :f8e5m2)
+        "e4m3" => Nx.tensor([1.0], type: :f8_e4m3fn),
+        "e5m2" => Nx.tensor([2.0], type: :f8)
       }
 
       # Dump to binary

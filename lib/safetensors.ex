@@ -32,8 +32,7 @@ defmodule Safetensors do
     {:f, 32} => "F32",
     {:f, 16} => "F16",
     {:f, 8} => "F8_E5M2",
-    {:f, 8, :e5m2} => "F8_E5M2",
-    {:f, 8, :e4m3fn} => "F8_E4M3",
+    {:f8_e4m3fn, 8} => "F8_E4M3",
     {:s, 64} => "I64",
     {:s, 32} => "I32",
     {:s, 16} => "I16",
@@ -45,9 +44,6 @@ defmodule Safetensors do
   }
 
   @dtype_to_type for({k, v} <- @type_to_dtype, into: %{}, do: {v, k})
-                 # Override with explicit fp8 3-tuple types for reading
-                 |> Map.put("F8_E5M2", {:f, 8, :e5m2})
-                 |> Map.put("F8_E4M3", {:f, 8, :e4m3fn})
 
   @doc """
   Writes a map of tensors to a file.
@@ -100,24 +96,13 @@ defmodule Safetensors do
   end
 
   defp tensor_byte_size(tensor) do
-    elem_size =
-      case Nx.type(tensor) do
-        # fp8 3-tuple types are always 8 bits
-        {:f, 8, _format} -> 8
-        {_, size} -> size
-      end
-
-    elem_byte_size = div(elem_size, 8)
+    {_, size} = Nx.type(tensor)
+    elem_byte_size = div(size, 8)
     Nx.size(tensor) * elem_byte_size
   end
 
   defp tensor_to_iodata(tensor) do
-    elem_size =
-      case Nx.type(tensor) do
-        # fp8 3-tuple types are always 8 bits
-        {:f, 8, _format} -> 8
-        {_, size} -> size
-      end
+    {_, elem_size} = Nx.type(tensor)
 
     tensor
     |> Nx.to_binary()
