@@ -25,18 +25,9 @@ defmodule Safetensors.MixProject do
   defp deps do
     [
       {:jason, "~> 1.4"},
-      nx_dep(),
+      {:nx, github: "elixir-nx/nx", sparse: "nx", branch: "main"},
       {:ex_doc, "~> 0.37", only: :dev, runtime: false}
     ]
-  end
-
-  defp nx_dep do
-    # Allow local Nx development for fp8 testing
-    if path = System.get_env("NX_PATH") do
-      {:nx, path: path, override: true}
-    else
-      {:nx, "~> 0.5"}
-    end
   end
 
   defp docs do
