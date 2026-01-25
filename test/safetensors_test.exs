@@ -86,9 +86,8 @@ defmodule SafetensorsTest do
     data = %{test: Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8_e4m3fn)}
     Safetensors.write!(path, data)
 
-    assert Safetensors.read!(path) == %{
-             "test" => Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8_e4m3fn)
-           }
+    assert File.read!(path) ==
+             ~s(?\x00\x00\x00\x00\x00\x00\x00{"test":{"dtype":"F8_E4M3","shape":[2,2],"data_offsets":[0,4]}}\x38\x40\x44\x48)
   end
 
   @tag :tmp_dir
@@ -112,7 +111,8 @@ defmodule SafetensorsTest do
     data = %{test: Nx.tensor([[1.0, 2.0], [4.0, 8.0]], type: :f8)}
     Safetensors.write!(path, data)
 
-    assert Safetensors.read!(path) == %{"test" => Nx.tensor([[1.0, 2.0], [4.0, 8.0]], type: :f8)}
+    assert File.read!(path) ==
+             ~s(?\x00\x00\x00\x00\x00\x00\x00{"test":{"dtype":"F8_E5M2","shape":[2,2],"data_offsets":[0,4]}}\x3C\x40\x44\x48)
   end
 
   @tag :tmp_dir
