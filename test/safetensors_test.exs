@@ -78,4 +78,52 @@ defmodule SafetensorsTest do
 
     assert Safetensors.load!(serialized) == %{"test1" => Nx.tensor([[0, 0], [0, 0]], type: :s32)}
   end
+
+  @tag :tmp_dir
+  test "write f8_e4m3fn", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "safetensor")
+
+    data = %{test: Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8_e4m3fn)}
+    Safetensors.write!(path, data)
+
+    assert File.read!(path) ==
+             ~s(?\x00\x00\x00\x00\x00\x00\x00{"test":{"dtype":"F8_E4M3","shape":[2,2],"data_offsets":[0,4]}}\x38\x40\x44\x48)
+  end
+
+  @tag :tmp_dir
+  test "read f8_e4m3fn", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "safetensor")
+
+    File.write!(
+      path,
+      ~s(?\x00\x00\x00\x00\x00\x00\x00{"test":{"dtype":"F8_E4M3","shape":[2,2],"data_offsets":[0,4]}}\x38\x40\x44\x48)
+    )
+
+    assert Safetensors.read!(path) == %{
+             "test" => Nx.tensor([[1.0, 2.0], [3.0, 4.0]], type: :f8_e4m3fn)
+           }
+  end
+
+  @tag :tmp_dir
+  test "write f8_e5m2", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "safetensor")
+
+    data = %{test: Nx.tensor([[1.0, 2.0], [4.0, 8.0]], type: :f8)}
+    Safetensors.write!(path, data)
+
+    assert File.read!(path) ==
+             ~s(?\x00\x00\x00\x00\x00\x00\x00{"test":{"dtype":"F8_E5M2","shape":[2,2],"data_offsets":[0,4]}}\x3C\x40\x44\x48)
+  end
+
+  @tag :tmp_dir
+  test "read f8_e5m2", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "safetensor")
+
+    File.write!(
+      path,
+      ~s(?\x00\x00\x00\x00\x00\x00\x00{"test":{"dtype":"F8_E5M2","shape":[2,2],"data_offsets":[0,4]}}\x3C\x40\x44\x48)
+    )
+
+    assert Safetensors.read!(path) == %{"test" => Nx.tensor([[1.0, 2.0], [4.0, 8.0]], type: :f8)}
+  end
 end

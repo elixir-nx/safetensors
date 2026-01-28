@@ -31,6 +31,8 @@ defmodule Safetensors do
     {:f, 64} => "F64",
     {:f, 32} => "F32",
     {:f, 16} => "F16",
+    {:f, 8} => "F8_E5M2",
+    {:f8_e4m3fn, 8} => "F8_E4M3",
     {:s, 64} => "I64",
     {:s, 32} => "I32",
     {:s, 16} => "I16",
@@ -41,7 +43,7 @@ defmodule Safetensors do
     {:u, 8} => "U8"
   }
 
-  @dtype_to_type for {k, v} <- @type_to_dtype, into: %{}, do: {v, k}
+  @dtype_to_type for({k, v} <- @type_to_dtype, into: %{}, do: {v, k})
 
   @doc """
   Writes a map of tensors to a file.
@@ -94,8 +96,8 @@ defmodule Safetensors do
   end
 
   defp tensor_byte_size(tensor) do
-    {_, elem_size} = Nx.type(tensor)
-    elem_byte_size = div(elem_size, 8)
+    {_, size} = Nx.type(tensor)
+    elem_byte_size = div(size, 8)
     Nx.size(tensor) * elem_byte_size
   end
 
