@@ -61,6 +61,38 @@ defmodule SafetensorsTest do
     assert Nx.to_tensor(file_tensor) == Nx.tensor([[0, 0], [0, 0]], type: :s32)
   end
 
+  @tag :tmp_dir
+  test "pread! reads at an offset", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "data")
+    File.write!(path, "0123456789")
+
+    File.open!(path, [:read, :raw], fn file ->
+      assert Safetensors.Shared.pread!(file, 2, 7) == "2345678"
+    end)
+  end
+
+  @tag :tmp_dir
+  test "pread_chunks! reads in chunks", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "data")
+    File.write!(path, "0123456789")
+
+    File.open!(path, [:read, :raw], fn file ->
+      assert Safetensors.Shared.pread_chunks!(file, 2, 7, 3) == "2345678"
+    end)
+  end
+
+  @tag :tmp_dir
+  test "pread! raises when the file is shorter than the read", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "data")
+    File.write!(path, "0123456789")
+
+    File.open!(path, [:read, :raw], fn file ->
+      assert_raise RuntimeError, ~r/expected 20 bytes at offset 2, got 8/, fn ->
+        Safetensors.Shared.pread!(file, 2, 20)
+      end
+    end)
+  end
+
   test "load" do
     # source:
     # https://github.com/huggingface/safetensors/blob/1a65a3fdebcf280ef0ca32934901d3e2ad3b2c65/bindings/python/tests/test_simple.py#L35-L40
