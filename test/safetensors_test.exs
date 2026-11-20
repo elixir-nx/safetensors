@@ -82,6 +82,16 @@ defmodule SafetensorsTest do
   end
 
   @tag :tmp_dir
+  test "pread_chunks! reads a whole file larger than the chunk size", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "data")
+    File.write!(path, "0123456789")
+
+    File.open!(path, [:read, :raw], fn file ->
+      assert Safetensors.Shared.pread_chunks!(file, 0, 10, 3) == "0123456789"
+    end)
+  end
+
+  @tag :tmp_dir
   test "pread! raises when the file is shorter than the read", %{tmp_dir: tmp_dir} do
     path = Path.join(tmp_dir, "data")
     File.write!(path, "0123456789")
