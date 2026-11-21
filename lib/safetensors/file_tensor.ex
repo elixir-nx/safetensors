@@ -10,7 +10,7 @@ defimpl Nx.LazyContainer, for: Safetensors.FileTensor do
 
     load = fn ->
       File.open!(lazy_tensor.path, [:read, :raw], fn file ->
-        {:ok, binary} = :file.pread(file, lazy_tensor.byte_offset, lazy_tensor.byte_size)
+        binary = Safetensors.Shared.pread!(file, lazy_tensor.byte_offset, lazy_tensor.byte_size)
         Safetensors.Shared.build_tensor(binary, lazy_tensor.shape, lazy_tensor.type)
       end)
     end

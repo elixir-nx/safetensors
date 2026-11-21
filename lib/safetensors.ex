@@ -172,7 +172,7 @@ defmodule Safetensors do
               byte_size: byte_size
             }
           else
-            {:ok, binary} = :file.pread(file, byte_offset, byte_size)
+            binary = Shared.pread!(file, byte_offset, byte_size)
             Shared.build_tensor(binary, shape, type)
           end
 
